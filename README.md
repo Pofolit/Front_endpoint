@@ -15,3 +15,7 @@ npm run dev
     /login
         /pages.tsx
 ```
+
+- google login call : `http://localhost:8080/oauth2/code/google`
+- kakao login call : `http://localhost:8080/oauth2/code/kakao`
+- redirect_uri(auth callback) : `http://localhost:8080/oauth2/code/kakao`
