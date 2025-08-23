@@ -1,3 +1,4 @@
+"use client"
 export default function PrivacyPolicyPage() {
   return (
     <div style={{ padding: 16 }}>

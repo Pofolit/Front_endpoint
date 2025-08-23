@@ -12,7 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en"
+      data-darkreader-mode="dynamic"
+      data-darkreader-scheme="dark"
+      data-darkreader-proxy-injected="true">
       <body>{children}</body>
     </html>
   );

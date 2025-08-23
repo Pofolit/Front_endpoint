@@ -2,22 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { nextTick } from "process";
+import { jwtDecode } from "jwt-decode";
+import axios from "../lib/axios";
 
+// 필드 정보 배열을 수정
 const FIELDS = [
-  { label: "닉네임(aka)", name: "aka", type: "text", required: true },
-  { label: "생일", name: "birthDay", type: "date"  },
+  { label: "이메일", name: "email", type: "email", readOnly: true },
+  { label: "닉네임", name: "nickname", type: "text", required: true },
+  { label: "생일", name: "birthDay", type: "date" },
 ];
 
 const JOBS = [
-  { label: "프리랜서", value: "프리랜서" },
-  { label: "직장인", value: "직장인" },
+  { label: "프리랜서", value: "freelancer" },
+  { label: "직장인", value: "employee" },
 ];
 
 const DOMAINS = [
   { label: "글", value: "writing" },
   { label: "그림", value: "art" },
   { label: "음악", value: "music" },
+  { label: "개발", value: "dev" },
 ];
 
 const INTERESTS = [
@@ -30,37 +34,53 @@ const INTERESTS = [
 export default function SignupDetailsPage() {
   const router = useRouter();
   const [form, setForm] = useState({
-    aka: "",
+    email: "",
+    nickname: "",
     birthDay: "",
-    domain: "",
     job: "",
+    domain: "",
     interests: [] as string[],
   });
-  const [nickname, setNickname] = useState(""); // 닉네임 상태 추가
 
   // 인증 후 토큰/유저 정보 저장
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
-    const user = params.get("user");
+    const refreshToken = params.get("refreshToken");
+
+    console.log("Current URL search params:", window.location.search);
+    console.log("Access Token from URL:", token);
+    console.log("Refresh Token from URL:", refreshToken);
     if (token) {
-      localStorage.setItem("accessToken", token);
-      localStorage.setItem("user", user ?? "");
+      localStorage.setItem("token", token);
+      try {
+        const decodedToken: any = jwtDecode(token);
+        // 토큰에서 이메일 정보만 추출하여 폼 상태에 설정
+        setForm((prev) => ({
+          ...prev,
+          email: decodedToken.email,
+          nickname: decodedToken.nickname,
+          profileImage: decodedToken.profileImageUrl,
+        }));
+        console.log("Decoded token:", decodedToken);
+      } catch (error) {
+        console.error("Failed to decode token:", error);
+      }
+      
       // 주소창에서 쿼리 파라미터 제거
       window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    if (user) {
-      setNickname(decodeURIComponent(user));
+    } else {
+      console.error("Access or refresh token is missing from the URL.");
     }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
+      const isChecked = (e.target as HTMLInputElement).checked;
       setForm((prev) => ({
         ...prev,
-        interests: checked
+        interests: isChecked
           ? [...prev.interests, value]
           : prev.interests.filter((v) => v !== value),
       }));
@@ -71,18 +91,29 @@ export default function SignupDetailsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 토큰 가져오기
-    const token = localStorage.getItem("accessToken");
-    // 서버로 추가 정보 전송
-    await fetch("http://localhost:8080/api/v1/users/me/details", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(form),
-    });
-    router.replace("/");
+    const accessToken = localStorage.getItem("token");
+    
+    const updatePayload = {
+      nickname: form.nickname,
+      birthDay: form.birthDay,
+      job: form.job,
+      domain: form.domain,
+      interests: form.interests
+      
+    };
+    
+    try {
+      const response = await axios.patch("/api/v1/users/signup", updatePayload);
+      if (response.status === 200) {
+        router.replace("/");
+        alert("정보가 성공적으로 저장됐습니다.");
+      } else {
+        alert("정보 저장에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (error) {
+      console.error("네트워크 오류가 발생했습니다:", error);
+      alert("네트워크 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -92,6 +123,7 @@ export default function SignupDetailsPage() {
         onSubmit={handleSubmit}
       >
         <h2 className="text-2xl font-bold text-center mb-2">추가 정보 입력</h2>
+        
         {FIELDS.map((field) => (
           <div key={field.name}>
             <label className="block font-semibold mb-1">{field.label}</label>
@@ -99,13 +131,15 @@ export default function SignupDetailsPage() {
               type={field.type}
               name={field.name}
               required={field.required}
+              readOnly={field.readOnly}
               value={form[field.name as keyof typeof form]}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              placeholder={field.name === "aka" ? nickname : undefined} // 닉네임 placeholder 적용
+              className={`w-full border rounded px-3 py-2 ${field.readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              placeholder={field.label}
             />
           </div>
         ))}
+        {/* 업무분야 선택 */}
         <div>
           <label className="block font-semibold mb-1">업무분야</label>
           <select
@@ -123,6 +157,8 @@ export default function SignupDetailsPage() {
             ))}
           </select>
         </div>
+
+        {/* 직업 선택 */}
         <div>
           <label className="block font-semibold mb-1">직업</label>
           <select
@@ -140,6 +176,8 @@ export default function SignupDetailsPage() {
             ))}
           </select>
         </div>
+        
+        {/* 관심사 체크박스 */}
         <div>
           <label className="block font-semibold mb-1">관심사</label>
           <div className="flex gap-3 flex-wrap">
@@ -157,6 +195,7 @@ export default function SignupDetailsPage() {
             ))}
           </div>
         </div>
+
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded font-bold mt-4"

@@ -1,3 +1,4 @@
+"use client"
 export default function TermsOfServicePage() {
   return (
     <div style={{ padding: 16 }}>
