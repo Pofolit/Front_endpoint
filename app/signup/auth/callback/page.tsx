@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { handleAuthCallback } from "../../lib/axios";
+import { handleAuthCallback } from "../../../lib/axios";
 
 export default function AuthCallbackPage() {
   const router = useRouter();

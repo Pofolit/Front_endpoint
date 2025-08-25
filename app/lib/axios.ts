@@ -77,7 +77,7 @@ export async function handleAuthCallback(token: string) {
     throw e;
   }
 }
-// 프로필 업데이트 API 호출 - 헤더에 토큰박고 호출해야댐
+// 프로필 업데이트 API 호출 - 헤더에 토큰박고 호출
 export const updateProfile = async (data: any) => {
   try {
     const response = await instance.post("/api/v1/users/me/update", data);

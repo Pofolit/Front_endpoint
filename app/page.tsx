@@ -44,7 +44,7 @@ export default function HomePage() {
         hideLoadingAndShowLoginButton(2700, 2000);
         setUserInfo(null);
         console.info("fail token fetch :", userInfo);
-        router.replace("/login");
+        // router.replace("/login");
       }
     };
     getUserInfo();
