@@ -28,6 +28,7 @@ export default function LoginPage() {
             icon={MessageCircle}
             redirectUrl={'http://localhost:8080/oauth2/authorization/kakao'}
           />
+          
         </div>
         <PolicyPage />
       </div>

@@ -34,12 +34,14 @@ const INTERESTS = [
 export default function SignupDetailsPage() {
   const router = useRouter();
   const [form, setForm] = useState({
-    email: "",
-    nickname: "",
-    birthDay: "",
-    job: "",
-    domain: "",
+    email: "email",
+    nickname: "nickname",
+    profileImageUrl: "profileImageUrl",
+    birthDay: "birthDay",
+    job: "job",
+    domain: "domain",
     interests: [] as string[],
+    // 여기서 토큰 재발행 요청을 할지말지?
   });
 
   // 인증 후 토큰/유저 정보 저장
@@ -55,12 +57,12 @@ export default function SignupDetailsPage() {
       localStorage.setItem("token", token);
       try {
         const decodedToken: any = jwtDecode(token);
-        // 토큰에서 이메일 정보만 추출하여 폼 상태에 설정
+        // 토큰에서 불변 정보만 추출하여 폼 상태에 설정
         setForm((prev) => ({
           ...prev,
           email: decodedToken.email,
           nickname: decodedToken.nickname,
-          profileImage: decodedToken.profileImageUrl,
+          profileImageUrl: decodedToken.profileImageUrl,
         }));
         console.log("Decoded token:", decodedToken);
       } catch (error) {

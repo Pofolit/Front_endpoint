@@ -3,63 +3,55 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PolicyPage from "./policy/page";
-import axios from "./lib/axios";
-
-interface User {
-  [x: string]: any;
-  id: string;
-  email: string;
-  nickname: string;
-  profileImage?: string;
-  birthDay?: string;
-  job?: string;
-  domain?: string;
-  interests: string[];
-}
+import { fetchUserData, handleAuthCallback } from "./lib/axios";
+import { UserInfo } from "./lib/types/user";
 
 export default function HomePage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [showLoginButton, setShowLoginButton] = useState(false);
+  const [showProfileButton, setShowProfileButton] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
 
   useEffect(() => {
     setIsMounted(true);
-    const accessToken = localStorage.getItem("token");
 
     const showLoginButtonWithDelay = (delay: number) => {
       setTimeout(() => setShowLoginButton(true), delay);
     };
 
-    const hideLoadingAndShowLoginButton = (loadingDelay: number, buttonDelay: number) => {
+    const hideLoadingAndShowLoginButton = (
+      loadingDelay: number,
+      buttonDelay: number
+    ) => {
       setTimeout(() => {
         setShowLoading(false);
         showLoginButtonWithDelay(buttonDelay);
       }, loadingDelay);
     };
-
-    if (!accessToken) {
+    const accessToken = localStorage.getItem("token");
+    if (accessToken) {
+      window.history.replaceState({}, document.title, window.location.pathname);
       hideLoadingAndShowLoginButton(1100, 500); // Loading fadeout, button fadein
-      return;
     }
-    const fetchUserData = async () => {
+    // 사용자 추가 정보 가져오기
+    const getUserInfo = async () => {
       try {
-        const response = await axios.get("/api/v1/users/me");
-        setUser(response.data as User);
-        console.log(response.data);
-      } catch (info) {
+        const userInfo = await fetchUserData();
+        setUserInfo(userInfo as UserInfo);
+      } catch (userInfo) {
         hideLoadingAndShowLoginButton(2700, 2000);
-        console.info("fail token fetch :", info);
+        setUserInfo(null);
+        console.info("fail token fetch :", userInfo);
         router.replace("/login");
       }
     };
-
-    fetchUserData();
+    getUserInfo();
   }, [router]);
 
   let userInfoContent;
-  if (!isMounted || !user) {
+  if (!isMounted || !userInfo) {
     userInfoContent = (
       <div style={{ height: 32, position: "relative" }}>
         <h1 className="text-2xl font-bold text-center mb-4">메인 페이지</h1>
@@ -92,30 +84,34 @@ export default function HomePage() {
         <div className="text-sm relative ">
           <p className="absolute -left-5 ">user nickname : </p>
           <p className="absolute top-7 -left-7 ">user email : </p>
-          <p className="absolute translate-y-40 translate-x-20"> param: profileImageUrl</p>
+          <p className="absolute translate-y-40 translate-x-20">
+            {" "}
+            param: profileImageUrl
+          </p>
         </div>
         <div style={{ opacity: 0.3, marginTop: 8, filter: "blur(3px)" }}>
-          <p>{user.nickname}</p>
-          <p>{user.email}</p>
-          {user.profileImageUrl && (
+          <p>{userInfo.nickname}</p>
+          {/* <p>{userInfo.email}</p> */}
+          {userInfo.profileImageUrl && (
             <img
-              src={user.profileImageUrl}
+              src={userInfo.profileImageUrl}
               alt="프로필 이미지"
-            className="mx-auto mt-8 px-4 py-4 rounded-md w-1/2 h-fit object-cover "
-          />
+              className="mx-auto mt-8 px-4 py-4 rounded-md w-1/2 h-fit object-cover "
+            />
           )}
-          </div>
+        </div>
       </div>
     );
   }
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm"
+      <div
+        className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm"
         id="box"
         style={{ position: "relative", overflow: "hidden" }}
       >
         {userInfoContent}
-        {!user ? <PolicyPage /> : null}
+        <div className="mt-20">{!userInfo ? <PolicyPage /> : null} </div>
       </div>
     </main>
   );
