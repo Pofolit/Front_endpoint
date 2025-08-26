@@ -1,10 +1,9 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUserDispatch } from "../../../context/UserContext";
-import { fetchUserData } from "../../../api/axios";
-import { isValidUUID } from "../../../api/validator";
-import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../../../api/token";
+import { useUserDispatch } from "../../context/UserContext";
+import { fetchUserData } from "../../api/Interceptor";
+import { isValidUUID,parseByIdFromToken, parseByEmailFromToken, parseByNicknameFromToken } from "../../api/TokenUtil";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -18,9 +17,9 @@ export default function AuthCallbackPage() {
 
     const run = async () => {
       if (token) {
-        const id = extractIdFromToken(token);
-        const email = extractEmailFromToken(token);
-        const nickname = extractNicknameFromToken(token);
+        const id = parseByIdFromToken(token);
+        const email = parseByEmailFromToken(token);
+        const nickname = parseByNicknameFromToken(token);
         if (!id || !isValidUUID(id)) {
           alert("잘못된 인증 정보입니다.");
           router.replace("/login");

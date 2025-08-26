@@ -3,17 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PolicyPage from "./policy/page";
-import { getUser } from "./services/userService";
-import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../api/token";
-import { isValidUUID, isValidEmail, isValidNickname } from "../api/validator";
+import { getUser } from ".././api/UserService";
+import {
+  isValidUUID, isValidEmail, isValidNickname,
+  parseByIdFromToken, parseByEmailFromToken, parseByNicknameFromToken
+} from "../api/TokenUtil";
 import { useUserState, useUserDispatch } from "../context/UserContext";
 import { UserProfile } from "../components/UserProfile";
-import { User } from "../types/user";
+import { User } from "../api/types/UserField";
 
 export default function HomePage() {
   const router = useRouter();
   const dispatch = useUserDispatch();
-  const user = useUserState() as User | null;
+  const user = useUserState(); 
   const [isMounted, setIsMounted] = useState(false);
   const [showLoginButton, setShowLoginButton] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
@@ -37,9 +39,9 @@ export default function HomePage() {
         router.replace("/login");
         return;
       }
-      const id = extractIdFromToken(accessToken);
-      const email = extractEmailFromToken(accessToken);
-      const nickname = extractNicknameFromToken(accessToken);
+      const id = parseByIdFromToken(accessToken);
+      const email = parseByEmailFromToken(accessToken);
+      const nickname = parseByNicknameFromToken(accessToken);
       if (!id || !isValidUUID(id) || !isValidEmail(email ?? "") || !isValidNickname(nickname ?? "")) {
         hideLoadingAndShowLoginButton(2700, 2000);
         setIsMounted(true);
@@ -51,7 +53,6 @@ export default function HomePage() {
         const response = await getUser(id);
         setIsMounted(true);
         window.history.replaceState({}, document.title, window.location.pathname);
-        // role 속성은 User 타입에 optional로 추가
         if ((response.data as any).role === "ROLE_GUEST") {
           setTimeout(() => setShowSignupButton(true), 800);
         }
@@ -95,7 +96,7 @@ export default function HomePage() {
   } else {
     userInfoContent = (
       <div className="text-center text-lg font-semibold ">
-        <UserProfile user={user} />
+        
         {showSignupButton && (
           <button
             onClick={() => router.replace("/signup")}

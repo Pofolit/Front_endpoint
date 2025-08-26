@@ -1,3 +1,4 @@
+'use client'
 import React, { createContext, useReducer, useContext, Dispatch, ReactNode } from "react";
 
 // 상태 타입

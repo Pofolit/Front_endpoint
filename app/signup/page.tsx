@@ -4,7 +4,7 @@
 import React from "react";
 
 import { useSignup } from "../../hooks/useSignup";
-import SignupForm from "../../../components/SignupForm";
+import SignupForm from "../../components/SignupForm";
 
 export default function SignupDetailsPage() {
   const { form, handleChange, handleSubmit, router } = useSignup();

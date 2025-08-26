@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "../api/axios";
+import axios from "../api/Interceptor";
 import { useUserDispatch } from "../context/UserContext";
-import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../api/token";
-import { isValidEmail, isValidNickname, isValidUUID } from "../api/validator";
+import { isValidUUID,parseByIdFromToken,parseByEmailFromToken, parseByNicknameFromToken } from "../api/TokenUtil";
+
 
 export function useSignup() {
   const router = useRouter();
@@ -21,11 +21,10 @@ export function useSignup() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     if (token) {
-      localStorage.setItem("token", token);
-      const id = extractIdFromToken(token);
-      const email = extractEmailFromToken(token);
-      const nickname = extractNicknameFromToken(token);
-      if (!id || !isValidUUID(id) || !isValidEmail(email ?? "") || !isValidNickname(nickname ?? "")) {
+      const id = parseByIdFromToken(token);
+      const email = parseByEmailFromToken(token);
+      const nickname = parseByNicknameFromToken(token);
+      if (!id || !isValidUUID(id)) {
         alert("잘못된 인증 정보입니다.");
         router.replace("/login");
         return;
@@ -56,7 +55,7 @@ export function useSignup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updatePayload = {
+    const updateUser = {
       nickname: form.nickname,
       birthDay: form.birthDay,
       job: form.job,
@@ -64,7 +63,7 @@ export function useSignup() {
     };
 
     try {
-      const response = await axios.patch("/api/v1/users/signup", updatePayload);
+      const response = await axios.patch("/api/v1/users/signup", updateUser);
       if (response.status === 200) {
         router.replace("/");
         alert("정보가 성공적으로 저장됐습니다.");

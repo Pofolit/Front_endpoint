@@ -1,8 +1,15 @@
 "use client";
 import React from "react";
-import { FIELDS, JOBS, DOMAINS } from ".././constants/signupFields";
+import { FIELDS, JOBS, DOMAINS } from "../api/types/UserField";
 
-export default function SignupForm({ form, handleChange, handleSubmit, router }) {
+interface SignupFormProps {
+  form: { [key: string]: string };
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  router: { replace: (path: string) => void };
+}
+
+export default function SignupForm({ form, handleChange, handleSubmit, router }: SignupFormProps) {
   return (
     <form
       className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md flex flex-col gap-6"
