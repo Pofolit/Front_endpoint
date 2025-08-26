@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { FIELDS, JOBS, DOMAINS } from ".././constants/signup";
+import { FIELDS, JOBS, DOMAINS } from ".././constants/signupFields";
 
 export default function SignupForm({ form, handleChange, handleSubmit, router }) {
   return (

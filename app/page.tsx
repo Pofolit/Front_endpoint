@@ -6,9 +6,9 @@ import PolicyPage from "./policy/page";
 import { getUser } from "./services/userService";
 import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../api/token";
 import { isValidUUID, isValidEmail, isValidNickname } from "../api/validator";
-import { useUserState, useUserDispatch } from "./context/UserContext";
-import { UserProfile } from "./components/UserProfile";
-import { User } from "./types/user";
+import { useUserState, useUserDispatch } from "../context/UserContext";
+import { UserProfile } from "../components/UserProfile";
+import { User } from "../types/user";
 
 export default function HomePage() {
   const router = useRouter();

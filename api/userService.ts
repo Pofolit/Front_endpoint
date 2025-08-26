@@ -1,4 +1,4 @@
-import axios from "./api/axios";
+import axios from "./axios";
 import { User } from "../types/user";
 
 export const getUser = (id: string) => axios.get<User>(`/api/v1/users/${id}`);

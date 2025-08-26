@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUserDispatch } from "../../context/UserContext";
+import { useUserDispatch } from "../../../context/UserContext";
 import { fetchUserData } from "../../../api/axios";
 import { isValidUUID } from "../../../api/validator";
 import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../../../api/token";

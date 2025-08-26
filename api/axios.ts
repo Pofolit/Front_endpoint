@@ -1,6 +1,6 @@
 import axios from "axios";
-import { Payload, UserInfo } from "../lib/types/user";
-import instance from "./axios"; // Updated import path
+import { Payload, UserInfo } from "../types/user";
+
 
 
 

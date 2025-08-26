@@ -1,5 +1,3 @@
-// 이메일, 닉네임, UUID 등 검증 유틸
-
 export function isValidEmail(email: string): boolean {
   return /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/.test(email);
 }

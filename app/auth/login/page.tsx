@@ -4,7 +4,7 @@
 import React from "react";
 import { Globe, MessageCircle } from 'lucide-react';
 import PolicyPage from "../../policy/page";
-import SocialLoginButton from "../../components/SocialLoginButtons";
+import SocialLoginButton from "../../../components/SocialLoginButtons";
 
 export default function LoginPage() {
   return (

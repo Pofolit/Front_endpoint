@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "../api/axios";
 import { useUserDispatch } from "../context/UserContext";
-import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../utils/token";
-import { isValidEmail, isValidNickname, isValidUUID } from "../utils/validator";
+import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../api/token";
+import { isValidEmail, isValidNickname, isValidUUID } from "../api/validator";
 
 export function useSignup() {
   const router = useRouter();
