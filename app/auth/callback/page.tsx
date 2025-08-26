@@ -1,10 +1,14 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { handleAuthCallback } from "../../../lib/axios";
+import { useUserDispatch } from "../../context/UserContext";
+import { fetchUserData } from "../../../api/axios";
+import { isValidUUID } from "../../../api/validator";
+import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../../../api/token";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const dispatch = useUserDispatch();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -12,21 +16,32 @@ export default function AuthCallbackPage() {
     const error = params.get("error");
     const message = params.get("message");
 
-    if (token) {
-      handleAuthCallback(token)
-        .then(() => {
+    const run = async () => {
+      if (token) {
+        const id = extractIdFromToken(token);
+        const email = extractEmailFromToken(token);
+        const nickname = extractNicknameFromToken(token);
+        if (!id || !isValidUUID(id)) {
+          alert("잘못된 인증 정보입니다.");
+          router.replace("/login");
+          return;
+        }
+        dispatch({ type: "LOGIN", payload: { id, email: email ?? "", nickname: nickname ?? "" } });
+        try {
+          await fetchUserData(id);
           window.history.replaceState({}, document.title, window.location.pathname);
           router.replace("/");
-        })
-        .catch(() => {
+        } catch {
           alert("인증 처리 중 오류 발생");
           router.replace("/login");
-        });
-    } else if (error) {
-      alert(message || "인증에 실패했습니다.");
-      router.replace("/login");
-    }
-  }, [router]);
+        }
+      } else if (error) {
+        alert(message || "인증에 실패했습니다.");
+        router.replace("/login");
+      }
+    };
+    run();
+  }, [router, dispatch]);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f6fa" }}>

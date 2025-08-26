@@ -3,55 +3,69 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PolicyPage from "./policy/page";
-import { fetchUserData, handleAuthCallback } from "./lib/axios";
-import { UserInfo } from "./lib/types/user";
+import { getUser } from "./services/userService";
+import { extractIdFromToken, extractEmailFromToken, extractNicknameFromToken } from "../api/token";
+import { isValidUUID, isValidEmail, isValidNickname } from "../api/validator";
+import { useUserState, useUserDispatch } from "./context/UserContext";
+import { UserProfile } from "./components/UserProfile";
+import { User } from "./types/user";
 
 export default function HomePage() {
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const dispatch = useUserDispatch();
+  const user = useUserState() as User | null;
   const [isMounted, setIsMounted] = useState(false);
   const [showLoginButton, setShowLoginButton] = useState(false);
-  const [showProfileButton, setShowProfileButton] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
+  const [showSignupButton, setShowSignupButton] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-
+    const accessToken = localStorage.getItem("token");
     const showLoginButtonWithDelay = (delay: number) => {
       setTimeout(() => setShowLoginButton(true), delay);
     };
-
-    const hideLoadingAndShowLoginButton = (
-      loadingDelay: number,
-      buttonDelay: number
-    ) => {
+    const hideLoadingAndShowLoginButton = (loadingDelay: number, buttonDelay: number) => {
       setTimeout(() => {
         setShowLoading(false);
         showLoginButtonWithDelay(buttonDelay);
       }, loadingDelay);
     };
-    const accessToken = localStorage.getItem("token");
-    if (accessToken) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      hideLoadingAndShowLoginButton(1100, 500); // Loading fadeout, button fadein
-    }
-    // 사용자 추가 정보 가져오기
-    const getUserInfo = async () => {
-      try {
-        const userInfo = await fetchUserData();
-        setUserInfo(userInfo as UserInfo);
-      } catch (userInfo) {
+    const fetchAndSetUser = async () => {
+      if (!accessToken) {
         hideLoadingAndShowLoginButton(2700, 2000);
-        setUserInfo(null);
-        console.info("fail token fetch :", userInfo);
-        // router.replace("/login");
+        setIsMounted(true);
+        router.replace("/login");
+        return;
+      }
+      const id = extractIdFromToken(accessToken);
+      const email = extractEmailFromToken(accessToken);
+      const nickname = extractNicknameFromToken(accessToken);
+      if (!id || !isValidUUID(id) || !isValidEmail(email ?? "") || !isValidNickname(nickname ?? "")) {
+        hideLoadingAndShowLoginButton(2700, 2000);
+        setIsMounted(true);
+        router.replace("/login");
+        return;
+      }
+      dispatch({ type: "LOGIN", payload: { id, email: email ?? "", nickname: nickname ?? "" } });
+      try {
+        const response = await getUser(id);
+        setIsMounted(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // role 속성은 User 타입에 optional로 추가
+        if ((response.data as any).role === "ROLE_GUEST") {
+          setTimeout(() => setShowSignupButton(true), 800);
+        }
+      } catch {
+        hideLoadingAndShowLoginButton(2700, 2000);
+        setIsMounted(true);
+        router.replace("/login");
       }
     };
-    getUserInfo();
-  }, [router]);
+    fetchAndSetUser();
+  }, [router, dispatch]);
 
   let userInfoContent;
-  if (!isMounted || !userInfo) {
+  if (!isMounted || !user) {
     userInfoContent = (
       <div style={{ height: 32, position: "relative" }}>
         <h1 className="text-2xl font-bold text-center mb-4">메인 페이지</h1>
@@ -81,25 +95,26 @@ export default function HomePage() {
   } else {
     userInfoContent = (
       <div className="text-center text-lg font-semibold ">
-        <div className="text-sm relative ">
-          <p className="absolute -left-5 ">user nickname : </p>
-          <p className="absolute top-7 -left-7 ">user email : </p>
-          <p className="absolute translate-y-40 translate-x-20">
-            {" "}
-            param: profileImageUrl
-          </p>
-        </div>
-        <div style={{ opacity: 0.3, marginTop: 8, filter: "blur(3px)" }}>
-          <p>{userInfo.nickname}</p>
-          {/* <p>{userInfo.email}</p> */}
-          {userInfo.profileImageUrl && (
-            <img
-              src={userInfo.profileImageUrl}
-              alt="프로필 이미지"
-              className="mx-auto mt-8 px-4 py-4 rounded-md w-1/2 h-fit object-cover "
-            />
-          )}
-        </div>
+        <UserProfile user={user} />
+        {showSignupButton && (
+          <button
+            onClick={() => router.replace("/signup")}
+            className="mt-6 px-4 py-2 rounded bg-green-500 text-white font-bold shadow hover:bg-green-600 transition"
+          >
+            추가 정보 입력
+          </button>
+        )}
+        <button
+          onClick={() => router.replace("/signup")}
+          className={`mt-6 px-4 py-2 rounded bg-orange-500 text-white font-bold shadow transition-opacity duration-700 ${
+            showSignupButton ? "opacity-100" : "opacity-0"
+          }`}
+          style={{
+            pointerEvents: showSignupButton ? "auto" : "none",
+          }}
+        >
+          프로필을 완성하러 가기
+        </button>
       </div>
     );
   }
@@ -111,7 +126,7 @@ export default function HomePage() {
         style={{ position: "relative", overflow: "hidden" }}
       >
         {userInfoContent}
-        <div className="mt-20">{!userInfo ? <PolicyPage /> : null} </div>
+  <div className="mt-20">{!user ? <PolicyPage /> : null} </div>
       </div>
     </main>
   );

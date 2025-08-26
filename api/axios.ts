@@ -1,5 +1,8 @@
 import axios from "axios";
 import { Payload, UserInfo } from "../lib/types/user";
+import instance from "./axios"; // Updated import path
+
+
 
 const instance = axios.create({
   baseURL: "http://localhost:8080",
@@ -55,43 +58,35 @@ instance.interceptors.response.use(
         window.location.href = "/login";
       }
     }
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error(error));
   }
 );
 
 // 로그인 콜백 헬퍼
-export async function handleAuthCallback(token: string) {
+export async function handleAuthCallback(token: string, refreshToken?: string) {
   if (!token || typeof token !== "string") return;
   localStorage.setItem("token", token);
+  if (refreshToken && typeof refreshToken === "string") {
+    localStorage.setItem("refreshToken", refreshToken);
+  }
   try {
     const convertToken = token.split(".")[1];
     if (!convertToken) throw new Error("Invalid token format");
-    const decodedPayload = JSON.parse(atob(convertToken));
-    const uuid = decodedPayload.sub;
-    console.log("Decoded JWT Payload:", decodedPayload);
-    // uuid를 캐시로 저장.
-    // localStorage.setItem("userInfo", JSON.stringify(userInfo)); // 보안상 하면 안될 듯. 캐시로 넣어야하나
-    return uuid;
+    const decodedPayload = JSON.parse(atob(token.split(".")[1]));
+    const id = decodedPayload.sub; 
+    return id;
   } catch (e) {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     throw e;
   }
 }
-// 프로필 업데이트 API 호출 - 헤더에 토큰박고 호출
-export const updateProfile = async (data: any) => {
-  try {
-    const response = await instance.post("/api/v1/users/me/update", data);
-    return response.data;
-  } catch (error) {
-    console.error("Failed to update profile:", error);
-    throw error;
-  }
-};
 
-// 사용자 추가정보 가져오기 API 호출
-export const fetchUserData = async (): Promise<UserInfo | null> => {
+
+// 사용자 추가정보 요청 API 
+export const fetchUserData = async (id: string): Promise<Payload | null> => {
   try {
-    const response = await instance.get<UserInfo>("/api/v1/users/me");
+    const response = await instance.get<Payload>(`/api/v1/users/${id}`);
     return response.data;
   } catch (error) {
     console.error("Failed to fetch user data:", error);
@@ -100,3 +95,4 @@ export const fetchUserData = async (): Promise<UserInfo | null> => {
 };
 
 export default instance;
+
