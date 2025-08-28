@@ -1,5 +1,6 @@
 import React from "react";
 import { POLICY_CONFIG, PolicyType } from "../constants/policyConfig";
+import  PolicySection  from "../components/PolicySection";
 
 interface PolicyBoxProps {
   readonly type: PolicyType;
@@ -43,6 +44,7 @@ export default function PolicyBox({ type, hovered, onHover, onExpand }: PolicyBo
           background: "#fff",
         }}
       />
+      <PolicySection title={title} text={src} />
       <span
         className={`absolute right-4 top-4 px-3 py-1 rounded bg-blue-300 text-white text-xs font-semibold shadow transition-all duration-300 ${
           isHovered

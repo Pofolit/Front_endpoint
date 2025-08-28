@@ -1,9 +1,8 @@
-// ...existing code...
 "use client";
 
 import React from "react";
 import { Globe, MessageCircle } from 'lucide-react';
-import PolicyPage from "../policy/page";
+import PolicySection from "../../components/PolicySection";
 import SocialLoginButton from "../../components/SocialLoginButtons";
 
 export default function LoginPage() {
@@ -30,7 +29,9 @@ export default function LoginPage() {
             redirectUrl={'http://localhost:8080/oauth2/authorization/kakao'}
           />
         </div>
-        <PolicyPage />
+          <div className="mt-20">{<PolicySection title="이용약관" text="이용약관 내용" />}</div>
+
+        
       </div>
     </div>
   );

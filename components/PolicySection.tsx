@@ -1,5 +1,5 @@
 import React from "react";
-
+// import PolicyType from ".././constants/policyConfig";
 interface PolicySectionProps {
   title: string;
   text: string;

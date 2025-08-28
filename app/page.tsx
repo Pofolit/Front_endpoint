@@ -2,20 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import PolicyPage from "./policy/page";
+import PolicySection from ".././components/PolicySection";
 import { getUser } from ".././api/UserService";
 import {
-  isValidUUID, isValidEmail, isValidNickname,
-  parseByIdFromToken, parseByEmailFromToken, parseByNicknameFromToken
+  isValidUUID,
+  isValidEmail,
+  isValidNickname,
+  parseByIdFromToken,
+  parseByEmailFromToken,
+  parseByNicknameFromToken,
 } from "../api/TokenUtil";
 import { useUserState, useUserDispatch } from "../context/UserContext";
-import { UserProfile } from "../components/UserProfile";
-import { User } from "../api/types/UserField";
+import { UserProfile } from ".././components/UserProfile";
+import { User } from ".././api/types/UserField";
 
 export default function HomePage() {
   const router = useRouter();
   const dispatch = useUserDispatch();
-  const user = useUserState(); 
+  const user = useUserState();
   const [isMounted, setIsMounted] = useState(false);
   const [showLoginButton, setShowLoginButton] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
@@ -26,7 +30,10 @@ export default function HomePage() {
     const showLoginButtonWithDelay = (delay: number) => {
       setTimeout(() => setShowLoginButton(true), delay);
     };
-    const hideLoadingAndShowLoginButton = (loadingDelay: number, buttonDelay: number) => {
+    const hideLoadingAndShowLoginButton = (
+      loadingDelay: number,
+      buttonDelay: number
+    ) => {
       setTimeout(() => {
         setShowLoading(false);
         showLoginButtonWithDelay(buttonDelay);
@@ -42,17 +49,29 @@ export default function HomePage() {
       const id = parseByIdFromToken(accessToken);
       const email = parseByEmailFromToken(accessToken);
       const nickname = parseByNicknameFromToken(accessToken);
-      if (!id || !isValidUUID(id) || !isValidEmail(email ?? "") || !isValidNickname(nickname ?? "")) {
+      if (
+        !id ||
+        !isValidUUID(id) ||
+        !isValidEmail(email ?? "") ||
+        !isValidNickname(nickname ?? "")
+      ) {
         hideLoadingAndShowLoginButton(2700, 2000);
         setIsMounted(true);
         router.replace("/login");
         return;
       }
-      dispatch({ type: "LOGIN", payload: { id, email: email ?? "", nickname: nickname ?? "" } });
+      dispatch({
+        type: "LOGIN",
+        payload: { id, email: email ?? "", nickname: nickname ?? "" },
+      });
       try {
         const response = await getUser(id);
         setIsMounted(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
         if ((response.data as any).role === "ROLE_GUEST") {
           setTimeout(() => setShowSignupButton(true), 800);
         }
@@ -96,7 +115,6 @@ export default function HomePage() {
   } else {
     userInfoContent = (
       <div className="text-center text-lg font-semibold ">
-        
         {showSignupButton && (
           <button
             onClick={() => router.replace("/signup")}
@@ -127,7 +145,11 @@ export default function HomePage() {
         style={{ position: "relative", overflow: "hidden" }}
       >
         {userInfoContent}
-  <div className="mt-20">{!user ? <PolicyPage /> : null} </div>
+        <div className="mt-20">
+          {!user ? (
+            <PolicySection title="이용약관" text="이용약관 내용" />
+          ) : null}{" "}
+        </div>
       </div>
     </main>
   );

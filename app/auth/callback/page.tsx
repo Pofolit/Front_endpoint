@@ -1,9 +1,9 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUserDispatch } from "../../context/UserContext";
-import { fetchUserData } from "../../api/Interceptor";
-import { isValidUUID,parseByIdFromToken, parseByEmailFromToken, parseByNicknameFromToken } from "../../api/TokenUtil";
+import { useUserDispatch } from "../../../context/UserContext";
+import { fetchUserData } from "../../../api/Interceptor";
+import { isValidUUID,parseByIdFromToken, parseByEmailFromToken, parseByNicknameFromToken } from "../../../api/TokenUtil";
 
 export default function AuthCallbackPage() {
   const router = useRouter();

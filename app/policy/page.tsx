@@ -5,6 +5,7 @@ import PolicyBox from "../../components/PolicyBox";
 import ExpandedBox from "../../components/ExpandedBox";
 import { PolicyType } from "../../constants/policyConfig";
 
+
 export default function PolicyPage() {
   const [hovered, setHovered] = useState<PolicyType | null>(null);
   const [expanded, setExpanded] = useState<PolicyType | null>(null);
