@@ -2,6 +2,7 @@ import axios from "axios";
 import { updateUser  } from "./UserService"; 
 import { parseByIdFromToken,saveToken,removeToken } from "./TokenUtil";
 import { User } from "./types/UserField";
+import { responseCookiesToRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 // 요청 생성
 const instance = axios.create({
@@ -10,6 +11,24 @@ const instance = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// default token interceptor
+// instance.interceptors.response.use(
+//   (responseCookies) => response,
+//   (error) => {
+
+//     const token = responseCookiesToRequestCookies(responseCookies);
+//     token.JSON
+
+//     if (responseCookiesToRequestCookies(token)) {
+//   // Handle token expiration or invalidation
+//   removeToken();
+//   window.location.href = "/login";
+//     }
+//     return Promise.reject(error);
+//   }
+// );
+
 // Token 요청 인터셉터: 헤더에 토큰 자동탑재
 instance.interceptors.request.use((meta) => {
   const token = localStorage.getItem("token");
@@ -19,6 +38,7 @@ instance.interceptors.request.use((meta) => {
   }
   return meta;
 });
+
 // 404 인터셉터
 instance.interceptors.response.use(
   (response) => response,
